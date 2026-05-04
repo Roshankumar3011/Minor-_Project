@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailPass | Modern Railway Booking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">RAILPASS</div>
+        <div class="nav-links">
+            <a href="#" onclick="showSection('search-section')">Search Trains</a>
+            <a href="#" onclick="showSection('history-section')">My Bookings</a>
+            <a href="#">Support</a>
+            <a href="#" style="color: var(--accent-color)">Hi, Roshan</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Search Section -->
+        <section id="search-section" class="fade-in">
+            <div class="hero">
+                <h1>Where to next?</h1>
+                <p>Book your next journey with India's fastest railway platform.</p>
+            </div>
+
+            <div class="search-box">
+                <div class="input-group">
+                    <label>From</label>
+                    <input type="text" id="source" placeholder="E.g. New Delhi" value="New Delhi">
+                </div>
+                <div class="input-group">
+                    <label>To</label>
+                    <input type="text" id="destination" placeholder="E.g. Mumbai" value="Mumbai">
+                </div>
+                <div class="input-group">
+                    <label>Date</label>
+                    <input type="date" id="travel-date">
+                </div>
+                <button class="btn-primary" onclick="searchTrains()">Search Trains</button>
+            </div>
+
+            <div id="train-results" class="train-list">
+                <!-- Trains will be injected here -->
+                <div style="text-align: center; color: var(--text-dim); margin-top: 2rem;">
+                    Enter source and destination to search trains.
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history-section" class="fade-in" style="display: none;">
+            <h2 style="margin-bottom: 2rem; border-bottom: 2px solid var(--glass-border); padding-bottom: 1rem;">Booking History</h2>
+            <div id="booking-history-list" class="train-list">
+                <!-- Bookings will be injected here -->
+                <div style="text-align: center; color: var(--text-dim);">No bookings found.</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('booking-modal')">&times;</span>
+            <h2 id="modal-train-name">Book Rajdhani Express</h2>
+            <p id="modal-train-info" style="color: var(--text-dim); margin-bottom: 2rem;"></p>
+            
+            <div class="booking-form">
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
+                    <div class="input-group">
+                        <label>Primary Passenger Name</label>
+                        <input type="text" id="primary-name" placeholder="Full Name">
+                    </div>
+                    <div class="input-group">
+                        <label>Age</label>
+                        <input type="number" id="primary-age" placeholder="Age">
+                    </div>
+                    <div class="input-group">
+                        <label>Gender</label>
+                        <select id="primary-gender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="nominee-section">
+                    <h4>Backup Passenger (Nominee)</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1rem;">In case of emergency, you can replace the traveler with this nominee once.</p>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label>Nominee Name</label>
+                            <input type="text" id="nominee-name" placeholder="Full Name">
+                        </div>
+                        <div class="input-group">
+                            <label>Age</label>
+                            <input type="number" id="nominee-age" placeholder="Age">
+                        </div>
+                        <div class="input-group">
+                            <label>Gender</label>
+                            <select id="nominee-gender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" style="width: 100%; margin-top: 1rem;" onclick="confirmBooking()">Confirm & Pay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Replacement Modal -->
+    <div id="replacement-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('replacement-modal')">&times;</span>
+            <h2>Nominee Replacement</h2>
+            <p style="color: var(--text-dim); margin-bottom: 2rem;">Replacing primary passenger with nominee. This action is irreversible and can only be done once.</p>
+            
+            <div class="booking-form">
+                <div class="input-group">
+                    <label>Enter OTP</label>
+                    <input type="text" id="replacement-otp" placeholder="Enter 6-digit OTP (Try 123456)">
+                    <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">For demo, use 123456</p>
+                </div>
+                <input type="hidden" id="replacement-pnr">
+                <button class="btn-primary" onclick="executeReplacement()">Verify & Replace</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
