@@ -326,7 +326,7 @@ const AdminDashboard = () => {
             </div>
 
             <button 
-              onClick={() => openModal()}
+              onClick={() => navigate('/admin/add-train')}
               className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 rounded-[22px] font-black flex items-center gap-4 shadow-2xl shadow-blue-600/30 transition-all active:scale-95 uppercase text-md tracking-[0.2em] italic border border-white/10"
             >
               <Plus size={24} />

@@ -10,6 +10,7 @@ const SearchResults = () => {
   const [loading, setLoading] = useState(true);
   const [trains, setTrains] = useState([]);
   const [selectedClasses, setSelectedClasses] = useState({});
+  const [error, setError] = useState(null);
 
   // Parse query params
   const searchParams = new URLSearchParams(location.search);
@@ -22,13 +23,13 @@ const SearchResults = () => {
   useEffect(() => {
     const fetchTrains = async () => {
       setLoading(true);
+      setError(null);
       try {
-        console.log(`API Request: GET /api/trains/search?from=${from}&to=${to}&date=${date}`);
         const response = await trainApi.search(from, to, date);
-        console.log("API Response Data:", response.data);
         setTrains(response.data);
-      } catch (error) {
-        console.error("Search API Failure:", error);
+      } catch (err) {
+        console.error("Search API Failure:", err);
+        setError("Failed to connect to the server. Please check your internet connection or try again later.");
       } finally {
         setLoading(false);
       }
@@ -92,6 +93,16 @@ const SearchResults = () => {
             <div className="flex flex-col items-center justify-center py-24">
               <div className="w-14 h-14 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-6"></div>
               <p className="text-slate-400 text-lg font-bold animate-pulse">Fetching the best trains for you...</p>
+            </div>
+          ) : error ? (
+            <div className="bg-slate-900/40 backdrop-blur-xl p-20 rounded-[40px] border border-red-500/20 text-center">
+               <p className="text-red-400 font-bold uppercase tracking-widest">{error}</p>
+               <button 
+                 onClick={() => window.location.reload()}
+                 className="mt-6 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-all"
+               >
+                 Try Again
+               </button>
             </div>
           ) : trains.length === 0 ? (
             <div className="bg-slate-900/40 backdrop-blur-xl p-20 rounded-[40px] border border-white/5 text-center">

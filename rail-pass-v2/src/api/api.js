@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8081/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -53,6 +53,7 @@ export const bookingApi = {
     getHistory: (userId) => api.get(`/bookings/history/${userId}`),
     getByPnr: (pnr) => api.get(`/bookings/${pnr}`),
     cancel: (pnr) => api.post(`/bookings/cancel/${pnr}`),
+    cancelPassenger: (pnr, passengerId) => api.post(`/bookings/cancel/${pnr}/passenger/${passengerId}`),
     replace: (data) => api.post('/bookings/replace', data),
     getAll: () => api.get('/bookings/all'),
 };

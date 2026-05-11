@@ -42,6 +42,16 @@ public class BookingController {
         }
     }
 
+    @PostMapping("/cancel/{pnr}/passenger/{passengerId}")
+    public ResponseEntity<String> cancelPassenger(@PathVariable String pnr, @PathVariable Long passengerId) {
+        try {
+            bookingService.cancelSinglePassenger(pnr, passengerId);
+            return ResponseEntity.ok("Passenger cancelled successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/{pnr}")
     public ResponseEntity<Booking> getTicket(@PathVariable String pnr) {
         return ResponseEntity.ok(bookingService.getBookingByPnr(pnr));

@@ -18,6 +18,10 @@ const MyBookings = () => {
   const [selectedBookingForReplace, setSelectedBookingForReplace] = useState(null);
   const [selectedPassengerId, setSelectedPassengerId] = useState(null);
 
+  const [showCancelPassengerModal, setShowCancelPassengerModal] = useState(false);
+  const [selectedBookingForCancel, setSelectedBookingForCancel] = useState(null);
+  const [cancelPassengerId, setCancelPassengerId] = useState(null);
+
   // Consolidate all loading logic into a single robust useEffect
   useEffect(() => {
     let mounted = true;
@@ -148,6 +152,30 @@ const MyBookings = () => {
     }
   };
 
+  const handleCancelPassengerClick = (booking) => {
+    setSelectedBookingForCancel(booking);
+    setShowCancelPassengerModal(true);
+    setCancelPassengerId(null);
+  };
+
+  const handleConfirmCancelPassenger = async () => {
+    if (!cancelPassengerId) {
+      alert("Please select a passenger to cancel.");
+      return;
+    }
+    
+    if (!window.confirm("Are you sure you want to cancel this passenger? This action cannot be undone.")) return;
+
+    try {
+      await bookingApi.cancelPassenger(selectedBookingForCancel.pnr, cancelPassengerId);
+      alert("Passenger cancelled successfully.");
+      setShowCancelPassengerModal(false);
+      fetchBookings();
+    } catch (error) {
+      alert(error.response?.data || "Cancellation failed.");
+    }
+  };
+
   const filteredBookings = bookings.filter(b => {
     const journeyDate = parseDate(b.journeyDate);
     const today = new Date();
@@ -253,10 +281,19 @@ const MyBookings = () => {
                           <button 
                             onClick={() => handleCancel(booking.pnr)}
                             className="p-3 bg-white/5 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-white/5 text-slate-400"
-                            title="Cancel Booking"
+                            title="Cancel Full Ticket"
                           >
                             <XCircle size={22} />
                           </button>
+                          {booking.passengers && booking.passengers.filter(p => p.status !== 'CANCELLED').length > 1 && (
+                            <button 
+                              onClick={() => handleCancelPassengerClick(booking)}
+                              className="p-3 bg-white/5 hover:bg-orange-600 hover:text-white rounded-xl transition-all border border-white/5 text-slate-400"
+                              title="Cancel Single Passenger"
+                            >
+                              <User size={22} className="text-orange-500 group-hover:text-white" />
+                            </button>
+                          )}
                           {booking.nominee && !booking.isReplaced && getHoursUntilDeparture(booking.journeyDate, booking.train.departureTime) >= 15 && (
                             <button 
                               onClick={() => handleReplaceClick(booking)}
@@ -372,6 +409,71 @@ const MyBookings = () => {
                 className="flex-1 py-5 rounded-2xl font-black text-sm uppercase tracking-widest bg-white/5 text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all border border-white/5"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Cancel Passenger Modal */}
+      {showCancelPassengerModal && selectedBookingForCancel && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 animate-fade-in">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onClick={() => setShowCancelPassengerModal(false)}></div>
+          <div className="relative w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[40px] overflow-hidden shadow-2xl animate-slide-up">
+            <div className="p-10 border-b border-white/5 flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Cancel <span className="text-orange-500">Passenger</span></h2>
+                <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mt-1">Select one traveler to cancel from this booking</p>
+              </div>
+              <button onClick={() => setShowCancelPassengerModal(false)} className="text-slate-500 hover:text-white transition-all"><XCircle size={32} /></button>
+            </div>
+            
+            <div className="p-10 space-y-6">
+              <div className="space-y-4">
+                <p className="text-xs font-black text-slate-500 uppercase tracking-widest border-l-4 border-orange-600 pl-4">Confirmed Passengers</p>
+                <div className="grid grid-cols-1 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {selectedBookingForCancel.passengers?.filter(p => p.status !== 'CANCELLED').map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setCancelPassengerId(p.id)}
+                      className={`w-full p-6 rounded-2xl border transition-all flex items-center justify-between group ${
+                        cancelPassengerId === p.id 
+                        ? 'bg-orange-600 border-orange-500 text-white shadow-xl shadow-orange-600/20' 
+                        : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${cancelPassengerId === p.id ? 'bg-white/20 text-white' : 'bg-white/5 text-slate-500'}`}>
+                          <User size={20} />
+                        </div>
+                        <div className="text-left">
+                          <p className={`text-lg font-black uppercase italic ${cancelPassengerId === p.id ? 'text-white' : 'text-slate-200'}`}>{p.name}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">{p.gender} • {p.age} Years</p>
+                        </div>
+                      </div>
+                      {cancelPassengerId === p.id && <CheckCircle2 size={24} className="text-white animate-scale-in" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-10 bg-slate-950/50 border-t border-white/5 flex flex-col sm:flex-row gap-4">
+              <button 
+                onClick={handleConfirmCancelPassenger}
+                disabled={!cancelPassengerId}
+                className={`flex-[2] py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
+                  cancelPassengerId 
+                  ? 'bg-white text-black hover:bg-orange-600 hover:text-white' 
+                  : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                }`}
+              >
+                Cancel Passenger
+              </button>
+              <button 
+                onClick={() => setShowCancelPassengerModal(false)}
+                className="flex-1 py-5 rounded-2xl font-black text-sm uppercase tracking-widest bg-white/5 text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all border border-white/5"
+              >
+                Close
               </button>
             </div>
           </div>

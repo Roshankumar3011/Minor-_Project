@@ -116,8 +116,48 @@ public class BookingService {
             booking.getNominee().setStatus(Passenger.PassengerStatus.CANCELLED);
         }
         
-        int passengerCount = booking.getPassengers().size();
-        trainService.updateAvailability(booking.getTrain().getId(), booking.getJourneyDate(), booking.getClassType(), -passengerCount);
+        long confirmedCount = booking.getPassengers().stream()
+                .filter(p -> p.getStatus() == Passenger.PassengerStatus.CONFIRMED)
+                .count();
+
+        booking.getPassengers().forEach(p -> p.setStatus(Passenger.PassengerStatus.CANCELLED));
+        
+        trainService.updateAvailability(booking.getTrain().getId(), booking.getJourneyDate(), booking.getClassType(), -(int)confirmedCount);
+        bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void cancelSinglePassenger(String pnr, Long passengerId) {
+        Booking booking = getBookingByPnr(pnr);
+        if (booking.getStatus() == Booking.BookingStatus.CANCELLED) {
+            throw new RuntimeException("Ticket is already cancelled");
+        }
+
+        Passenger passengerToCancel = booking.getPassengers().stream()
+                .filter(p -> p.getId().equals(passengerId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Passenger not found in this booking"));
+
+        if (passengerToCancel.getStatus() == Passenger.PassengerStatus.CANCELLED) {
+            throw new RuntimeException("Passenger is already cancelled");
+        }
+
+        passengerToCancel.setStatus(Passenger.PassengerStatus.CANCELLED);
+
+        // Update seat availability (+1)
+        trainService.updateAvailability(booking.getTrain().getId(), booking.getJourneyDate(), booking.getClassType(), -1);
+
+        // Check if all passengers are now cancelled
+        boolean allCancelled = booking.getPassengers().stream()
+                .allMatch(p -> p.getStatus() == Passenger.PassengerStatus.CANCELLED);
+
+        if (allCancelled) {
+            booking.setStatus(Booking.BookingStatus.CANCELLED);
+            if (booking.getNominee() != null) {
+                booking.getNominee().setStatus(Passenger.PassengerStatus.CANCELLED);
+            }
+        }
+
         bookingRepository.save(booking);
     }
 

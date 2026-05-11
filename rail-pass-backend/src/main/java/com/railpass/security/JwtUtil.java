@@ -15,9 +15,16 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_STRING = "your-very-secure-and-long-secret-key-for-railpass-system-256-bit";
-    private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_STRING.getBytes());
+    @org.springframework.beans.factory.annotation.Value("${jwt.secret}")
+    private String SECRET_STRING;
+
+    private SecretKey secretKey;
     private final long expiration = 1000 * 60 * 60 * 10; // 10 hours
+
+    @jakarta.annotation.PostConstruct
+    protected void init() {
+        secretKey = Keys.hmacShaKeyFor(SECRET_STRING.getBytes());
+    }
 
     public String generateToken(String email, String role) {
         Map<String, Object> claims = new HashMap<>();

@@ -11,6 +11,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import AddTrain from './pages/AddTrain';
+
 
 function App() {
   return (
@@ -46,6 +48,12 @@ function App() {
                 <AdminDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/admin/add-train" element={
+              <ProtectedRoute>
+                <AddTrain />
+              </ProtectedRoute>
+            } />
+
             <Route path="/ticket/:pnr" element={
               <ProtectedRoute>
                 <TicketView />
