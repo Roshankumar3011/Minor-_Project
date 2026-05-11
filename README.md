@@ -89,5 +89,5 @@ The application will be available at `http://localhost:5173` (or the port shown 
 4. **Continuity**: The original seat/berth assignment remains unchanged.
 
 ---
-Developed with ❤️ by **Antigravity**
+
 #   M i n o r - _ P r o j e c t  
